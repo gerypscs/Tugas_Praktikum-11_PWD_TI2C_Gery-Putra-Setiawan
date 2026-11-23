@@ -1,5 +1,4 @@
 <?php
-// Memanggil file koneksi sesuai ketentuan tugas
 require_once 'koneksi.php';
 
 // Query SELECT untuk mengambil semua data dari tabel anggota
