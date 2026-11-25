@@ -1,5 +1,11 @@
 <?php
-session_start();
+$errors = isset($_GET['errors']) ? $_GET['errors'] : [];
+if (!is_array($errors)) {
+    $errors = [$errors];
+}
+
+$sukses = isset($_GET['status']) && $_GET['status'] === 'sukses';
+$gagal = isset($_GET['status']) && $_GET['status'] === 'gagal';
 ?>
 <!DOCTYPE html>
 <html lang="id">
@@ -58,23 +64,27 @@ session_start();
 <div class="container">
     <h3>Pendaftaran Anggota Perpustakaan</h3>
 
-    <?php if (isset($_SESSION['sukses'])): ?>
+    <?php if ($sukses): ?>
         <div class="sukses">
-            <?= htmlspecialchars($_SESSION['sukses']); ?>
+            Data anggota berhasil didaftarkan.
         </div>
-        <?php unset($_SESSION['sukses']); ?>
     <?php endif; ?>
 
-    <?php if (isset($_SESSION['errors']) && !empty($_SESSION['errors'])): ?>
+    <?php if (!empty($errors)): ?>
         <div class="gagal">
             <strong>Pendaftaran gagal:</strong>
             <ul>
-                <?php foreach ($_SESSION['errors'] as $err): ?>
-                    <li><?= htmlspecialchars($err); ?></li>
+                <?php foreach ($errors as $err): ?>
+                    <?php if (is_scalar($err)): ?>
+                        <li><?= htmlspecialchars((string) $err, ENT_QUOTES, 'UTF-8'); ?></li>
+                    <?php endif; ?>
                 <?php endforeach; ?>
             </ul>
         </div>
-        <?php unset($_SESSION['errors']); ?>
+    <?php elseif ($gagal): ?>
+        <div class="gagal">
+            Data gagal disimpan. Silakan coba lagi.
+        </div>
     <?php endif; ?>
 
     <form action="proses_anggota.php" method="POST">
@@ -90,7 +100,7 @@ session_start();
 
         <div class="form-group">
             <label for="email">Email</label>
-            <input type="text" name="email" id="email">
+            <input type="email" name="email" id="email">
         </div>
 
         <div class="form-group">
