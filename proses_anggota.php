@@ -1,5 +1,4 @@
 <?php
-session_start();
 require_once 'koneksi.php';
 
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
@@ -62,8 +61,7 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
 
     // Cek apakah ada error validasi
     if (!empty($errors)) {
-        $_SESSION['errors'] = $errors;
-        header("Location: form_anggota.php");
+        header("Location: form_anggota.php?" . http_build_query(['errors' => $errors]));
         exit;
     }
 
@@ -71,22 +69,18 @@ if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     $sql = "INSERT INTO anggota (no_anggota, nama_lengkap, email, no_hp, jenis_anggota, alamat) VALUES (?, ?, ?, ?, ?, ?)";
     $stmt = mysqli_prepare($conn, $sql);
 
-    if ($stmt) {
-        mysqli_stmt_bind_param($stmt, "ssssss", $no_anggota, $nama_lengkap, $email, $no_hp, $jenis_anggota, $alamat);
-
-        if (mysqli_stmt_execute($stmt)) {
-            $_SESSION['sukses'] = "Data anggota berhasil didaftarkan.";
-        } else {
-            $_SESSION['errors'] = ["Gagal menyimpan data: " . mysqli_stmt_error($stmt)];
-        }
-
-        mysqli_stmt_close($stmt);
-    } else {
-        $_SESSION['errors'] = ["Terjadi kesalahan pada query database: " . mysqli_error($conn)];
+    if (!$stmt) {
+        mysqli_close($conn);
+        header("Location: form_anggota.php?status=gagal");
+        exit;
     }
 
+    mysqli_stmt_bind_param($stmt, "ssssss", $no_anggota, $nama_lengkap, $email, $no_hp, $jenis_anggota, $alamat);
+    $berhasil = mysqli_stmt_execute($stmt);
+
+    mysqli_stmt_close($stmt);
     mysqli_close($conn);
-    header("Location: form_anggota.php");
+    header("Location: form_anggota.php?status=" . ($berhasil ? "sukses" : "gagal"));
     exit;
 } else {
     header("Location: form_anggota.php");
